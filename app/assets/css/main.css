@@ -1,0 +1,26 @@
+:root {
+	--primary-clr-1: #00FACD;
+	--primary-clr-1-op: #00FACD44;
+	--primary-clr-2: #FCFCEC;
+
+
+	--background-primary: #191B1C;
+	--background-secondary: #0A0C0D;
+}
+
+body, *{
+	padding: 0;
+	margin: 0;
+}
+
+body {
+	background: radial-gradient(#ffffff08, #fff0), var(--background-primary);
+	color: var(--primary-clr-2);
+	height: 100vh;
+	font-family: "Figtree", sans-serif;
+}
+
+.global-container {
+	width: 80vw;
+	padding: 0 10vw;
+}
