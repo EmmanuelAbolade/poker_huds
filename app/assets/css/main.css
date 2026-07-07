@@ -6,6 +6,8 @@
 
 	--background-primary: #191B1C;
 	--background-secondary: #0A0C0D;
+
+	--default-gap: .8rem;
 }
 
 body, *{
@@ -21,6 +23,7 @@ body {
 }
 
 .global-container {
-	width: 80vw;
-	padding: 0 10vw;
+	--offset: 8vw;
+	width: calc(100vw - calc(2 * var(--offset)));
+	padding: 0 var(--offset);
 }

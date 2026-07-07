@@ -1,0 +1,101 @@
+<script setup>
+	const cards = [
+		{ name: 'hi', desc: 'sup', }, { name: 'hi', desc: 'sup', },
+		{ name: 'hi', desc: 'sup', }, { name: 'hi', desc: 'sup', },
+		{ name: 'hi', desc: 'sup', }, { name: 'hi', desc: 'sup', },
+		{ name: 'hi', desc: 'sup', }, { name: 'hi', desc: 'sup', },
+		{ name: 'hi', desc: 'sup', }, { name: 'hi', desc: 'sup', },
+		{ name: 'hi', desc: 'sup', }, { name: 'hi', desc: 'sup', }
+	];
+
+	// const categories = [ "GTO", "MDA", "Software", "Courses", "Cash", "MTT", "Spins", "PLO", "6+"];
+
+
+</script>
+
+<template>
+	<div class="page global-container">
+		<div class="type-selector">
+			<h1 class="type type-fifth">MDA</h1>
+			<h1 class="type type-fourth">GTO</h1>
+			<h1 class="type type-third">Software</h1>
+			<h1 class="type type-second">Courses</h1>
+			<h1 class="type type-main">Cash</h1>
+			<h1 class="type type-second">MTT</h1>
+			<h1 class="type type-third">Spins</h1>
+			<h1 class="type type-fourth">PLO</h1>
+			<h1 class="type type-fifth">6+</h1>
+		</div>
+		<div class="main">
+			<div class="page-section left-side"></div>
+			<div class="page-section right-side">
+				<div class="offer-card" v-for="card in cards">
+					{{ card.name }}
+					{{ card.desc }}
+				</div>
+			</div>
+		</div>
+	</div>
+</template>
+
+<style scoped>
+	.page {
+		height: 100%;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: .5rem;
+		padding-top: 2rem;
+	}
+
+	.main {
+		display: flex;
+		align-items: center;
+		gap: .5rem;
+		width: 100%;
+	}
+
+	.page-section {
+		height: 80vh;
+	}
+
+	.left-side {
+		background: var(--background-secondary);
+		flex-shrink: 0;
+		width: 25%;
+	}
+
+	.right-side {
+		width: 100%;
+		display: flex;
+		flex-wrap: wrap;
+		gap: .5rem;
+		overflow: auto;
+	}
+
+	.offer-card {
+		flex: 1 1 30%;
+		height: 20rem;
+		background: var(--background-secondary);
+	}
+
+	.type-selector {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		width: calc(100% - 4rem);
+		background: var(--background-secondary);
+		padding: 1rem 2rem;
+	}
+
+	.type {
+		width: 10%;
+		text-align: center;
+	}
+
+	.type-main {   font-size: 2rem; color: var(--primary-clr-1); width: 15% }
+	.type-second { font-size: 1.8rem; }
+	.type-third  { font-size: 1.6rem; width: 8%; }
+	.type-fourth { font-size: 1.4rem; width: 6%; }
+	.type-fifth  { font-size: 1.2rem; width: 4%; }
+</style>

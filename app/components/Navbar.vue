@@ -8,6 +8,7 @@
 
 		<div class="nav-section center">
 			<GlobalTxtInput class="search-input" placeholder="Search" />
+			<GlobalButton class=btn><Icon name="material-symbols:search-rounded" style="color: var(--primary-clr-2)" /></GlobalButton>
 		</div>
 
 		<div class="nav-section right-side">
@@ -27,17 +28,22 @@
 		height: 8vh;
 		border-bottom: 2px solid var(--primary-clr-2);
 
-		gap: 2rem;
 		font-size: 15px;
 	}
 
 	.nav-section {
+		display: flex;
+		flex-wrap: nowrap;
 		flex-shrink: 0;
+	}
+
+	.center {
+		gap: var(--default-gap);
 	}
 
 	.right-side {
 		display: flex;
-		gap: 1rem;
+		gap: var(--default-gap);
 	}
 
 	.btn, .search-input {
