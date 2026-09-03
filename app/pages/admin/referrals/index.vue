@@ -2,7 +2,7 @@
 <!-- Referrals - the module the client specifically called out ("monitor
      referrals and manage them if he needs to"). Two levels are already
      baked into the data model (level 1 = direct, level 2 = sub-referral,
-     both attributed to referrerUserId - see server/utils/mockDb.ts seed
+     both attributed to referrerUserId - see prisma/seed.ts seed
      data). This page has a read-only tree summary grouped by top
      referrer (the "visualization" the client's doc asks for) plus a flat
      records table with the actual admin controls: adjust earnings,
