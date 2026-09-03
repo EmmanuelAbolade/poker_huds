@@ -177,7 +177,7 @@ These are unanswered by the PDF/docx and materially affect backend work (they do
 | Phase | Scope | Target |
 |---|---|---|
 | **Phase 0 — Foundation** (this week) | Repo/git workflow, PROJECTDOC/DIARY, domain types, mock data layer, admin layout + theming, mock auth, dashboard shell, **Categories full CRUD** as reference module, placeholder pages for all other modules | Days 1–2 |
-| **Phase 1 — Core CRUD** | Users CRUD, HUD Products CRUD (incl. situations/screens/pop-ups nested editing), Media upload UI | Days 3–5 |
+| **Phase 1 — Core CRUD** | ✅ Users CRUD. ✅ HUD Products CRUD (incl. situations/screens/pop-ups nested editing). ⬜ Media upload UI (still pending a storage provider decision — see §6 Q4; images/videos are plain URL fields for now). | Days 3–5 |
 | **Phase 2 — Referrals & Orders** | Referral tree view + monitoring/management, Orders/Licenses management, audit log | Week 2 |
 | **Phase 3 — Analytics & Settings** | Dashboards/charts, system settings, email templates, feature toggles | Week 2–3 |
 | **Phase 4 — Real backend cutover** | Swap mock data layer for real DB/auth/storage/payments once client answers open questions | Ongoing, as answers land |
@@ -190,3 +190,4 @@ These are unanswered by the PDF/docx and materially affect backend work (they do
 *(Append-only log of significant decisions/changes to this document. Narrative day-by-day detail lives in DIARY.md.)*
 
 - **2026-09-03** — Initial version. Read client's PDF (via docx summary — no PDF text-extraction tooling available locally) and docx design docs. Established git workflow (upstream/main mirrored, `development` branch created). Began Phase 0 scaffolding.
+- **2026-09-03** — Phase 0 merged to `development`, forked to `EmmanuelAbolade/poker_huds`, PR #1 (`development → main`) opened for client review. Phase 1 (Users + HUD Products CRUD) built same day — see DIARY.md.
