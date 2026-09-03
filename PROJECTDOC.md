@@ -123,29 +123,23 @@ This mirrors the client's spec exactly (HUD → situations → screens → pop-u
 
 ### 5.2 Backend
 - **Nuxt server routes** (`server/api/admin/**`) act as the API layer — this is what Nuxt UI's tables/forms call.
-- **Real database**: `prisma/schema.prisma` (Prisma ORM, SQLite for local dev — see §5.3). This is the actual, running database schema, not a placeholder.
-- **Mock data layer** (`server/utils/mockDb.ts`): still in use by every route not yet cut over — see §5.6 for status. Seeded in-memory store with the same entity shapes as the real schema.
-- **Auth**: a minimal mock session (httpOnly cookie) gates `/admin/*` behind a login page today. This is **not** production auth — it exists so the workflow (login → protected dashboard → logout) is real and demonstrable, and gets replaced once the client confirms a real auth strategy.
+- **Real database**: `prisma/schema.prisma` (Prisma ORM, SQLite for local dev — see §5.3). Every admin route queries it — the mock data layer (`server/utils/mockDb.ts`) that stood in during Phase 0-3 has been fully migrated off of and deleted (see §5.6).
+- **Auth**: session lookups (`login`/`session`) query the real `AdminUser` table; the password check itself is still a hardcoded mock constant since there's no credential system yet. A minimal cookie session gates `/admin/*` behind a login page today. This is **not** production auth — it exists so the workflow (login → protected dashboard → logout) is real and demonstrable, and gets replaced once the client confirms a real auth strategy.
 
 ### 5.3 Database choice: Prisma + SQLite now, Postgres-ready
 No database was confirmed by the client (open question in §6, Q1), but "build the full database schema" was explicitly promised and agreed to. Rather than block on a cloud provider decision, we chose **SQLite via Prisma for local development** — zero setup, no external account needed, and the schema is written to be Postgres-compatible from day one (every type/relation used is supported by both). Moving to production Postgres later is a one-line change: `provider = "sqlite"` → `"postgresql"` in `schema.prisma` plus a real `DATABASE_URL`. Nothing else about the schema, routes, or frontend changes.
 
 We deliberately pinned `prisma`/`@prisma/client` to **6.19.3** rather than letting `npm install` resolve to the `8.0.0-rc` currently tagged `latest` on npm — the RC changes CLI/config conventions significantly (a new `prisma.config.ts` format, a different default client output path) and auto-installs AI-agent "skill" folders into whatever repo runs `prisma init`, which doesn't belong in a client project. 6.19.3 is the last release on the well-established, thoroughly-documented 6.x line.
 
-### 5.4 Mock → real database migration
-`server/utils/mockDb.ts`'s generic helpers (`list`, `get`, `create`, `update`, `remove`) were always meant to be a swappable stand-in — see the original decision log in `DIARY.md` Day 1. That swap has started: routes are being cut over from `mockDb` to `prisma` (via `server/utils/prisma.ts`, a singleton client) one module at a time, same reference-module-first approach as the original UI build.
+### 5.4 Mock → real database migration (complete)
+`server/utils/mockDb.ts`'s generic helpers (`list`, `get`, `create`, `update`, `remove`) were always meant to be a swappable stand-in — see the original decision log in `DIARY.md` Day 1. That swap is done: every module was cut over from `mockDb` to `prisma` (via `server/utils/prisma.ts`, a singleton client) one at a time, same reference-module-first approach as the original UI build, and `mockDb.ts` has been deleted.
 
 ### 5.5 Reference CRUD module
-**Categories** was built first as the complete, working pattern (list table, create/edit modal form, delete with confirm, server routes) precisely because it's the simplest entity in the model — and for the same reason, it's the first module cut over to the real database, proving the schema end-to-end before every other module follows the same mechanical migration.
+**Categories** was built first as the complete, working pattern (list table, create/edit modal form, delete with confirm, server routes) precisely because it's the simplest entity in the model — and for the same reason, it was the first module cut over to the real database, proving the schema end-to-end before every other module followed the same mechanical migration.
 
 ### 5.6 Backend cutover status
 
-| Module | Data source |
-|---|---|
-| Categories | ✅ Real database (Prisma) |
-| Users, HUD Products, Orders/Licenses, Referrals, Settings, Audit Log (write side) | ⬜ Mock store (`mockDb.ts`) — same routes, same behavior, not yet migrated |
-
-**Known limitation while this is in progress**: HUD routes still validate `categoryId` against `mockDb.categories`, not the real table. Both are seeded with the same IDs so this coincidentally works today, but a category created or deleted through the now-real Categories UI won't be reflected in HUD validation until HUD's routes are migrated too. Not a bug to "fix" separately — it resolves itself as each module gets cut over, tracked here so it isn't mistaken for a real bug in the meantime.
+Every module — Categories, Users, HUD Products (including the nested situations/screens/popups tree), Orders/Licenses, Referrals, Settings, Auth, Stats, Analytics, Audit Log — now reads and writes exclusively through Prisma against the real database. Real foreign-key constraints now enforce things the mock layer could only leave comments about: deleting a Category/User/HUD still referenced elsewhere correctly 409s instead of silently orphaning data. `mockDb.ts` is gone; nothing in the codebase references it. Nothing left in this list.
 
 ---
 
@@ -192,7 +186,7 @@ These are unanswered by the PDF/docx and materially affect backend work (they do
 | **Phase 1 — Core CRUD** | ✅ Users CRUD. ✅ HUD Products CRUD (incl. situations/screens/pop-ups nested editing). ⬜ Media upload UI (still pending a storage provider decision — see §6 Q4; images/videos are plain URL fields for now). | Days 3–5 |
 | **Phase 2 — Referrals & Orders** | ✅ Orders/Licenses management (refund cascades to license revoke, manual order recording, license extend/revoke). ✅ Referrals module (tree summary, earnings adjustment, flag/unflag abuse, CSV export). ⬜ Dedicated audit log page (entries are already recorded via `recordAuditLog()` on every mutation - just not surfaced in the UI yet). | Week 2 |
 | **Phase 3 — Analytics & Settings** | ✅ Analytics (revenue by day, popular HUDs, referral earnings by referrer, user activity split). ✅ Settings (general/logo, feature toggles, payment/storage stubs, plain-text email template). ✅ Audit Log surfaced (data was already being recorded since Phase 0). ⬜ Rich email template editor (plain text field for now; TipTap is an installed-but-unused dependency for this later). | Week 2–3 |
-| **Phase 4 — Real backend cutover** | ✅ Database schema built and running (Prisma + SQLite, §5.3). ✅ Categories cut over as proof (§5.6). ⬜ Remaining modules' routes migrated from mock to Prisma (mechanical, same pattern per module). ⬜ Real auth/storage/payments — still blocked on client answers in §6. | In progress |
+| **Phase 4 — Real backend cutover** | ✅ Database schema built and running (Prisma + SQLite, §5.3). ✅ Every module migrated from the mock layer to Prisma (§5.6) — `mockDb.ts` deleted. ⬜ Real auth/storage/payments — still blocked on client answers in §6. | Schema + migration done; auth/storage/payments pending client answers |
 | **Phase 5 — Storefront/user UI connection** | Connect admin-managed data to the client-facing storefront and user dashboard | After admin console sign-off |
 
 ---
@@ -206,3 +200,4 @@ These are unanswered by the PDF/docx and materially affect backend work (they do
 - **2026-09-03** — Phase 2 (Orders/Licenses + Referrals) built same day. Audit log entries are recorded on every mutation (`recordAuditLog()` in `server/utils/mockDb.ts`) but have no dedicated admin page yet — cheap to add once Settings/Analytics (Phase 3) are underway.
 - **2026-09-03** — Phase 3 (Analytics, Settings, Audit Log) built same day. Every module from PROJECTDOC.md §3.2 now has at least a scaffolded page; every one except Media has real CRUD or real read functionality. Remaining before the client's spec is "fully built": Media upload UI (blocked on storage provider), real payment/auth/storage wiring (Phase 4, blocked on client answers in §6), and connecting this admin data to the storefront/user UI (Phase 5).
 - **2026-09-03** — Client confirmed the plan to build the real database schema, backend API endpoints, admin dashboard (already ahead of schedule), and integration. Real schema built same day (§5.3-5.6): Prisma + SQLite, every entity modeled with proper relations, Categories cut over as proof. Open question narrowed from "what database?" to just "which production Postgres host?" (§6, Q1).
+- **2026-09-03** — Rest of the migration finished same day: every module (Users, HUD Products incl. nested tree, Orders/Licenses, Referrals, Settings, Auth, Stats, Analytics, Audit Log) cut over from the mock layer to Prisma. `server/utils/mockDb.ts` deleted. The admin console now runs entirely on the real database.

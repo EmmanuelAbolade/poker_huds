@@ -20,6 +20,6 @@ export default defineEventHandler(async (event) => {
 		throw error
 	}
 
-	await recordAuditLogDb('admin_1', 'delete', 'category', id)
+	await recordAuditLog('admin_1', 'delete', 'category', id)
 	return { ok: true }
 })
