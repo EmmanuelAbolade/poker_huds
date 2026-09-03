@@ -1,11 +1,10 @@
 // server/api/admin/settings/index.get.ts
-// Returns settings as a flat key -> value map (easier for a settings form
-// to bind against than an array of { key, value } records).
+// Returns settings as a flat key -> value map. Backed by the real
+// database.
 
 export default defineEventHandler(async () => {
+	const settings = await prisma.setting.findMany()
 	const map: Record<string, string> = {}
-	for (const setting of mockDb.settings) {
-		map[setting.key] = setting.value
-	}
+	for (const setting of settings) map[setting.key] = setting.value
 	return map
 })
