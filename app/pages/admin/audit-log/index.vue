@@ -1,7 +1,7 @@
 <!-- app/pages/admin/audit-log/index.vue -->
 <!-- Read-only view of server/api/admin/audit-log - every create/update/
      delete/refund/etc. across every module has been writing here since
-     Phase 0 (recordAuditLog() in server/utils/mockDb.ts); this page just
+     Phase 0 (recordAuditLog() in server/utils/prisma.ts); this page just
      surfaces it. Closes the "Logs and audit trails" line from the
      client's System Management requirements. -->
 <script setup lang="ts">

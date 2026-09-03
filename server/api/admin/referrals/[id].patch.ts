@@ -1,19 +1,21 @@
 // server/api/admin/referrals/[id].patch.ts
-// Adjust a referral's earnings and/or toggle its flagged (suspected
-// abuse) state - the two admin controls the client specifically asked
-// for ("control what could be done online").
-
-import type { Referral } from '../../../../app/types/admin'
+// Adjust earnings and/or toggle flagged (suspected abuse). Backed by the
+// real database.
 
 export default defineEventHandler(async (event) => {
 	const id = getRouterParam(event, 'id')
-	const body = await readBody<Partial<Pick<Referral, 'earnings' | 'flagged'>>>(event)
+	const body = await readBody<{ earnings?: number, flagged?: boolean }>(event)
 
 	if (!id) throw createError({ statusCode: 400, statusMessage: 'id is required' })
 
-	const updated = updateItem<Referral>(mockDb.referrals, id, body)
-	if (!updated) throw createError({ statusCode: 404, statusMessage: 'Referral not found' })
+	let updated
+	try {
+		updated = await prisma.referral.update({ where: { id }, data: body })
+	} catch (error: any) {
+		if (error.code === 'P2025') throw createError({ statusCode: 404, statusMessage: 'Referral not found' })
+		throw error
+	}
 
-	recordAuditLog('admin_1', body.flagged !== undefined ? `set-flagged:${body.flagged}` : 'update', 'referral', id)
+	await recordAuditLog('admin_1', body.flagged !== undefined ? `set-flagged:${body.flagged}` : 'update', 'referral', id)
 	return updated
 })

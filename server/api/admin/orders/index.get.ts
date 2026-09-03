@@ -1,17 +1,26 @@
 // server/api/admin/orders/index.get.ts
-// List orders with user/HUD names resolved in and each order's license
-// (if any) attached, so the table can show purchase + license status
-// together without a second round trip.
+// List orders with user/HUD names and each order's license joined in.
+// Backed by the real database.
 
 export default defineEventHandler(async () => {
-	const items = [...mockDb.orders]
-		.sort((a, b) => b.purchasedAt.localeCompare(a.purchasedAt))
-		.map(order => ({
-			...order,
-			userName: mockDb.customers.find(c => c.id === order.userId)?.name ?? 'Unknown user',
-			hudTitle: mockDb.huds.find(h => h.id === order.hudId)?.title ?? 'Unknown HUD',
-			license: mockDb.licenses.find(l => l.orderId === order.id) ?? null
-		}))
+	const orders = await prisma.order.findMany({
+		orderBy: { purchasedAt: 'desc' },
+		include: { user: true, hud: true, license: true }
+	})
+
+	const items = orders.map(o => ({
+		id: o.id,
+		userId: o.userId,
+		hudId: o.hudId,
+		amount: o.amount,
+		status: o.status,
+		purchasedAt: o.purchasedAt.toISOString(),
+		userName: o.user.name,
+		hudTitle: o.hud.title,
+		license: o.license
+			? { ...o.license, issuedAt: o.license.issuedAt.toISOString(), expiresAt: o.license.expiresAt?.toISOString() ?? null }
+			: null
+	}))
 
 	return { items, total: items.length }
 })
