@@ -1,7 +1,6 @@
 // server/api/admin/categories/index.post.ts
 // Create a category. `slug` is derived from `name` if not provided.
-
-import type { Category } from '../../../../app/types/admin'
+// Backed by the real database - see index.get.ts's header comment.
 
 export default defineEventHandler(async (event) => {
 	const body = await readBody<{ name?: string, sortOrder?: number }>(event)
@@ -12,15 +11,21 @@ export default defineEventHandler(async (event) => {
 
 	const slug = body.name.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
 
-	const category: Category = {
-		id: generateId('cat'),
-		name: body.name.trim(),
-		slug,
-		sortOrder: body.sortOrder ?? mockDb.categories.length + 1
+	const sortOrder = body.sortOrder ?? (await prisma.category.count()) + 1
+
+	let category
+	try {
+		category = await prisma.category.create({
+			data: { name: body.name.trim(), slug, sortOrder }
+		})
+	} catch (error: any) {
+		if (error.code === 'P2002') {
+			throw createError({ statusCode: 409, statusMessage: 'A category with this name already exists' })
+		}
+		throw error
 	}
 
-	createItem(mockDb.categories, category)
-	recordAuditLog('admin_1', 'create', 'category', category.id)
+	await recordAuditLogDb('admin_1', 'create', 'category', category.id)
 
 	return category
 })
