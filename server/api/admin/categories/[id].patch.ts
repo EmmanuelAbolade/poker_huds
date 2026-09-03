@@ -21,6 +21,6 @@ export default defineEventHandler(async (event) => {
 		throw error
 	}
 
-	await recordAuditLogDb('admin_1', 'update', 'category', id)
+	await recordAuditLog('admin_1', 'update', 'category', id)
 	return updated
 })

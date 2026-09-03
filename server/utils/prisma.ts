@@ -1,8 +1,9 @@
 // server/utils/prisma.ts
-// Singleton PrismaClient for the real database. Nitro auto-imports
-// everything exported here, same as mockDb.ts - routes that have been
-// migrated import `prisma` and query the real SQLite (later Postgres)
-// database instead of the in-memory store.
+// Singleton PrismaClient for the app's database (server/utils/mockDb.ts,
+// the original in-memory stand-in, is gone now that every admin/** route
+// has been migrated to query this instead - see DIARY.md for that story).
+// Nitro auto-imports everything exported from server/utils/**, so `prisma`
+// and `recordAuditLog` below are available in every route with no import.
 //
 // Stashed on globalThis so Nitro's dev-mode module reloads (HMR) reuse
 // one connection instead of opening a new one per file save, which
@@ -18,11 +19,6 @@ if (import.meta.dev) {
 	globalForPrisma.prisma = prisma
 }
 
-// Mirrors server/utils/mockDb.ts's recordAuditLog() but writes to the real
-// AuditLogEntry table. During the mock -> Prisma route migration, some
-// modules write here and some write to the mock store's audit array -
-// server/api/admin/audit-log/index.get.ts merges both so nothing is lost
-// in between (see DIARY.md for the migration plan).
-export function recordAuditLogDb(actorUserId: string, action: string, entityType: string, entityId: string) {
+export function recordAuditLog(actorUserId: string, action: string, entityType: string, entityId: string) {
 	return prisma.auditLogEntry.create({ data: { actorUserId, action, entityType, entityId } })
 }
