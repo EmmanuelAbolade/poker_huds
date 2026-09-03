@@ -1,3 +1,10 @@
+/* app/assets/css/main.css */
+/* Global stylesheet. Tailwind + Nuxt UI power the /admin console;
+   the --primary-clr-* variables below are the existing storefront theme
+   (dark-only, left as-is - out of scope for the admin console work). */
+@import "tailwindcss";
+@import "@nuxt/ui";
+
 :root {
 	--primary-clr-1: #00FACD;
 	--primary-clr-1-op: #00FACD44;

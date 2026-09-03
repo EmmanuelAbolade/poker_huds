@@ -1,0 +1,191 @@
+// prisma/schema.prisma
+// The real database schema for the Poker HUD Store, promised to the
+// client as deliverable #1 ("the full database schema"). Mirrors
+// app/types/admin.ts entity-for-entity, but upgrades the mock layer's
+// flattened situations/screens/popups arrays into proper normalized
+// relational tables with foreign keys - see DIARY.md for why.
+//
+// Local dev runs on SQLite (zero setup, no external account needed) -
+// swapping to Postgres for production later is a one-line change to
+// `provider` + `DATABASE_URL` in .env, nothing else in this file changes
+// (SQLite and Postgres are both fully supported by every model below).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum AdminRole {
+  super_admin
+  admin
+  moderator
+}
+
+enum UserStatus {
+  active
+  banned
+}
+
+enum HudStatus {
+  draft
+  published
+}
+
+enum OrderStatus {
+  paid
+  refunded
+  pending
+}
+
+enum LicenseStatus {
+  active
+  expired
+  revoked
+}
+
+model AdminUser {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  role      AdminRole @default(admin)
+  createdAt DateTime @default(now())
+
+  auditLogEntries AuditLogEntry[]
+}
+
+model Customer {
+  id        String     @id @default(cuid())
+  email     String     @unique
+  name      String
+  status    UserStatus @default(active)
+  createdAt DateTime   @default(now())
+
+  referredById String?
+  referredBy   Customer?  @relation("CustomerReferrals", fields: [referredById], references: [id], onDelete: SetNull)
+  referrals    Customer[] @relation("CustomerReferrals")
+
+  orders            Order[]
+  licenses          License[]
+  referralsMade     Referral[] @relation("ReferralsMade")
+  referralsReceived Referral[] @relation("ReferralsReceived")
+}
+
+model Category {
+  id        String @id @default(cuid())
+  name      String
+  slug      String @unique
+  sortOrder Int    @default(0)
+
+  huds Hud[]
+}
+
+model Hud {
+  id          String    @id @default(cuid())
+  title       String
+  slug        String    @unique
+  description String
+  price       Float
+  status      HudStatus @default(draft)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  situations Situation[]
+  orders     Order[]
+  licenses   License[]
+}
+
+model Situation {
+  id        String @id @default(cuid())
+  title     String
+  sortOrder Int    @default(0)
+
+  hudId String
+  hud   Hud    @relation(fields: [hudId], references: [id], onDelete: Cascade)
+
+  screens Screen[]
+}
+
+model Screen {
+  id        String @id @default(cuid())
+  imageUrl  String
+  sortOrder Int    @default(0)
+
+  situationId String
+  situation   Situation @relation(fields: [situationId], references: [id], onDelete: Cascade)
+
+  popups PopupImage[]
+}
+
+model PopupImage {
+  id       String @id @default(cuid())
+  imageUrl String
+  label    String
+
+  screenId String
+  screen   Screen @relation(fields: [screenId], references: [id], onDelete: Cascade)
+}
+
+model Order {
+  id          String      @id @default(cuid())
+  amount      Float
+  status      OrderStatus @default(paid)
+  purchasedAt DateTime    @default(now())
+
+  userId String
+  user   Customer @relation(fields: [userId], references: [id])
+  hudId  String
+  hud    Hud      @relation(fields: [hudId], references: [id])
+
+  license License?
+}
+
+model License {
+  id        String        @id @default(cuid())
+  issuedAt  DateTime      @default(now())
+  expiresAt DateTime?
+  status    LicenseStatus @default(active)
+
+  orderId String @unique
+  order   Order  @relation(fields: [orderId], references: [id])
+  userId  String
+  user    Customer @relation(fields: [userId], references: [id])
+  hudId   String
+  hud     Hud      @relation(fields: [hudId], references: [id])
+}
+
+model Referral {
+  id        String   @id @default(cuid())
+  level     Int
+  earnings  Float    @default(0)
+  flagged   Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  referrerUserId String
+  referrer       Customer @relation("ReferralsMade", fields: [referrerUserId], references: [id])
+  referredUserId String
+  referred       Customer @relation("ReferralsReceived", fields: [referredUserId], references: [id])
+}
+
+model AuditLogEntry {
+  id         String   @id @default(cuid())
+  action     String
+  entityType String
+  entityId   String
+  createdAt  DateTime @default(now())
+
+  actorUserId String
+  actor       AdminUser @relation(fields: [actorUserId], references: [id])
+}
+
+model Setting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}

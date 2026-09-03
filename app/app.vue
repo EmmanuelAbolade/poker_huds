@@ -1,18 +1,13 @@
-<script lang="ts" setup>
-	import "./assets/css/main.css"
-</script>
+<!-- app/app.vue -->
+<!-- Root app shell. <UApp> provides Nuxt UI's toast/modal/tooltip/color-mode
+     context (needed by the admin console). <NuxtLayout> picks the storefront
+     "default" layout or the "admin" layout per-page - see app/layouts/. -->
+<script lang="ts" setup></script>
 
 <template>
-  <div class="global-wrapper">
-		<Navbar />
-		<NuxtPage />
-  </div>
+	<UApp>
+		<NuxtLayout>
+			<NuxtPage />
+		</NuxtLayout>
+	</UApp>
 </template>
-
-<style scoped>
-	.global-wrapper {
-		height: 100vh;
-		display: flex;
-		flex-direction: column;
-	}
-</style>
