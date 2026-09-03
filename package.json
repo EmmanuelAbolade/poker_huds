@@ -7,11 +7,15 @@
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
+    "postinstall": "nuxt prepare",
+    "db:migrate": "prisma migrate dev",
+    "db:seed": "prisma db seed",
+    "db:studio": "prisma studio"
   },
   "dependencies": {
     "@nuxt/image": "^2.0.0",
     "@nuxt/ui": "^4.9.0",
+    "@prisma/client": "^6.19.3",
     "@tiptap/core": "^3.27.1",
     "@tiptap/extension-bubble-menu": "^3.27.1",
     "@tiptap/extension-code": "^3.27.1",
@@ -38,6 +42,9 @@
   "devDependencies": {
     "@iconify-json/lucide": "^1.2.129",
     "@iconify-json/material-symbols": "^1.2.90",
+    "dotenv": "^17.4.2",
+    "prisma": "^6.19.3",
+    "tsx": "^4.23.13",
     "vue-tsc": "^3.3.11"
   }
 }
