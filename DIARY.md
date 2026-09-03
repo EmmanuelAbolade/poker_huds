@@ -62,6 +62,17 @@ It's the simplest entity in the data model (no nesting, no file uploads). Every 
 - **No `.env.example` despite `.gitignore` referencing one** (`!.env.example` exception in `.gitignore`). Not fixed yet — deferred until Phase 4 (real backend cutover) when we know what env vars actually exist. Logged so it isn't forgotten.
 - **`npm install` reported 48 vulnerabilities (incl. some high/critical)** in transitive dependencies of the starter template. Not addressed today — `npm audit fix --force` can introduce breaking major-version bumps and wasn't requested; flagging for a deliberate look rather than a blind fix.
 
+### Phase 0 scaffold built today
+Full list in `PROJECTDOC.md` §8. Highlights: Nuxt UI v4 + Tailwind 4 wired up correctly (this required fixes - the starter had `@nuxt/ui` installed but never imported its CSS layer, and never wrapped the app in `<UApp>`, so components would have rendered unstyled); a typed domain model for the whole system (`app/types/admin.ts`); a swappable mock data/auth layer; the admin shell (sidebar covering every module, light/dark toggle, mock login/logout); a working dashboard; and **Categories** built out as a complete, real CRUD module end-to-end.
+
+**Verification performed** (no browser available in this environment, so verified via the running dev server + curl, plus typecheck/build):
+- `nuxt typecheck` — caught two real generic-typing bugs in `server/utils/mockDb.ts`'s `updateItem()` helper (a `Partial<T>` merge that TS couldn't prove was safe); fixed by merging into a local variable and casting once, rather than reassigning through array indexing. Clean after the fix.
+- `npm run build` — full production build succeeds.
+- Auth flow: unauthed `GET /admin` → `302` to `/admin/login`; wrong password → `401`; correct login → session cookie set; `GET /admin` while authed → `200`; logout clears the session.
+- Categories CRUD: full create → update → delete → list lifecycle round-tripped correctly against the live API; all placeholder module pages and the storefront home page still return `200`.
+- Icon sets (`material-symbols`, `lucide`) were resolving over the network in dev with a warning about production builds — installed both as local `@iconify-json/*` devDependencies so builds don't depend on runtime API access.
+- What's **not** verified: actual pixel-level rendering / interaction in a real browser (the UTable cell renderers, modal open/close, toast placement, and light/dark visual correctness haven't been eyeballed). Flagging this explicitly rather than claiming full UI verification - worth a real browser pass before calling Phase 0 "done" for client review.
+
 ### Open item for the client/dev before we can push anywhere
 We don't yet have a fork of `Yarosurawa/poker_huds` to push to, and the local `gh` CLI isn't authenticated. Everything above exists only in the local git repo for now. Once we're pointed at a fork (or given push access), `development` gets pushed and feature PRs start flowing per the workflow in `PROJECTDOC.md` §7.
 
