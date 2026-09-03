@@ -178,7 +178,7 @@ These are unanswered by the PDF/docx and materially affect backend work (they do
 |---|---|---|
 | **Phase 0 — Foundation** (this week) | Repo/git workflow, PROJECTDOC/DIARY, domain types, mock data layer, admin layout + theming, mock auth, dashboard shell, **Categories full CRUD** as reference module, placeholder pages for all other modules | Days 1–2 |
 | **Phase 1 — Core CRUD** | ✅ Users CRUD. ✅ HUD Products CRUD (incl. situations/screens/pop-ups nested editing). ⬜ Media upload UI (still pending a storage provider decision — see §6 Q4; images/videos are plain URL fields for now). | Days 3–5 |
-| **Phase 2 — Referrals & Orders** | Referral tree view + monitoring/management, Orders/Licenses management, audit log | Week 2 |
+| **Phase 2 — Referrals & Orders** | ✅ Orders/Licenses management (refund cascades to license revoke, manual order recording, license extend/revoke). ✅ Referrals module (tree summary, earnings adjustment, flag/unflag abuse, CSV export). ⬜ Dedicated audit log page (entries are already recorded via `recordAuditLog()` on every mutation - just not surfaced in the UI yet). | Week 2 |
 | **Phase 3 — Analytics & Settings** | Dashboards/charts, system settings, email templates, feature toggles | Week 2–3 |
 | **Phase 4 — Real backend cutover** | Swap mock data layer for real DB/auth/storage/payments once client answers open questions | Ongoing, as answers land |
 | **Phase 5 — Storefront/user UI connection** | Connect admin-managed data to the client-facing storefront and user dashboard | After admin console sign-off |
@@ -191,3 +191,4 @@ These are unanswered by the PDF/docx and materially affect backend work (they do
 
 - **2026-09-03** — Initial version. Read client's PDF (via docx summary — no PDF text-extraction tooling available locally) and docx design docs. Established git workflow (upstream/main mirrored, `development` branch created). Began Phase 0 scaffolding.
 - **2026-09-03** — Phase 0 merged to `development`, forked to `EmmanuelAbolade/poker_huds`, PR #1 (`development → main`) opened for client review. Phase 1 (Users + HUD Products CRUD) built same day — see DIARY.md.
+- **2026-09-03** — Phase 2 (Orders/Licenses + Referrals) built same day. Audit log entries are recorded on every mutation (`recordAuditLog()` in `server/utils/mockDb.ts`) but have no dedicated admin page yet — cheap to add once Settings/Analytics (Phase 3) are underway.
