@@ -10,7 +10,7 @@ import type { Category, Hud } from '~/types/admin'
 
 definePageMeta({ layout: 'admin', middleware: 'admin-auth' })
 
-type HudRow = Hud & { categoryName: string }
+type HudRow = Omit<Hud, 'situations'> & { categoryName: string, situationsCount: number }
 
 const toast = useToast()
 const { data, refresh, status: fetchStatus } = await useFetch<{ items: HudRow[] }>('/api/admin/huds')
@@ -88,7 +88,7 @@ const columns: TableColumn<HudRow>[] = [
 	{
 		id: 'situations',
 		header: 'Situations',
-		cell: ({ row }) => row.original.situations.length
+		cell: ({ row }) => row.original.situationsCount
 	},
 	{
 		id: 'actions',
