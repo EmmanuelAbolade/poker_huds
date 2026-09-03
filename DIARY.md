@@ -78,6 +78,27 @@ We don't yet have a fork of `Yarosurawa/poker_huds` to push to, and the local `g
 
 ---
 
+### Phase 0 shipped: fork, push, PR
+`gh auth login` (browser flow) got us a token with `repo` scope. From there: `gh repo fork Yarosurawa/poker_huds --remote=false` created `EmmanuelAbolade/poker_huds`, wired up as `origin`; pushed `main` and `development`; opened PR #1 (`development → main`) with the full Phase 0 summary and test plan. That PR is the visible "work has started" artifact for the client.
+
+### Phase 1 — Users and HUD Products CRUD
+Built the same day, on `feature/phase1-users-huds-crud` off `development` (same branch discipline as Phase 0: feature branch → squash of logical commits → merge into `development`).
+
+**Users (Customers)**: straight copy of the Categories pattern (`server/api/admin/users/*`, `pages/admin/users/index.vue`) plus two things Categories didn't need: duplicate-email rejection on create (409), and a dedicated Ban/Unban button next to Edit/Delete, since that's explicitly one of the client's called-out admin actions. Password reset is *not* implemented — there's no real auth system yet to reset a password against (see open question in `PROJECTDOC.md` §7 Q2), so the page just says so rather than faking it.
+
+**HUD Products**: this is the one with real design decisions, because a HUD isn't flat — it's HUD → situations → screens → pop-up images, 3 levels deep. Split into two pages rather than cramming it into one modal:
+- `pages/admin/huds/index.vue` — list + a create modal for the flat fields (title/description/price/category) + publish/unpublish toggle + delete. This is "CRUD on the HUD record."
+- `pages/admin/huds/[id].vue` — a dedicated detail page for the nested tree. All the add/remove-situation/screen/popup logic happens against a local reactive clone of the fetched HUD; one "Save" button PATCHes the whole `situations` array back in one request.
+
+**Decision: one PATCH for the whole nested tree, not a REST endpoint per nesting level.** The "correct" REST shape would be something like `POST /huds/:id/situations`, `POST /huds/:id/situations/:sid/screens`, `POST .../screens/:scid/popups` — three more route files times create/update/delete each, against a mock store that's getting replaced anyway once a real database is chosen. That's a lot of throwaway surface area for no real benefit right now. Editing the tree as one document and saving it as one PATCH is simpler, still gives the client full CRUD over every level (add/edit/remove situations, screens, and pop-ups all work), and if/when this becomes a real database, that PATCH handler is exactly the place a real implementation would diff the old/new tree and issue the right inserts/updates/deletes — so nothing here is a dead end, it's just deferred.
+
+**Image fields are plain URL text inputs, not an upload widget.** No file storage provider is confirmed yet (`PROJECTDOC.md` §7 Q4 — S3 vs R2 vs Supabase Storage). Rather than build an upload UI against nothing, or guess a provider, the nested editor lets you type/paste an image URL for every screen and pop-up — so the data model and the editing workflow are both real and testable today, and swapping in an actual uploader later only touches the input component, not the underlying tree logic.
+
+### Verification (Phase 1)
+Same approach as Phase 0 — no browser in this environment, so verified via `nuxt typecheck` (clean), `npm run build` (succeeds), and curl against the live dev server: Users create/duplicate-reject/ban/delete all round-tripped; HUD create (with a missing-category 400 check)/get/PATCH-with-full-nested-tree/delete-then-404 all round-tripped, and both the HUD list and HUD detail pages render (200) server-side with real data. Visual/interaction verification in an actual browser is still outstanding — flagged again here since it applies to this batch of UI too.
+
+---
+
 ## Architecture Deep-Dive (living section — updated as the system grows)
 
 See `PROJECTDOC.md` §5 for the structured version. The short version: Nuxt server routes under `server/api/admin/**` are the only thing that talks to data (mock today, real DB later); Nuxt UI v4 components (tables, modals, forms) drive every CRUD screen; one shared `app/layouts/admin.vue` shell hosts every admin page behind a mock-session gate. Nothing about the storefront (`app/pages/index.vue`, `Navbar.vue`, etc.) is touched by this work.
