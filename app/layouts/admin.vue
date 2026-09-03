@@ -34,6 +34,7 @@ const navGroups = [
 		label: 'System',
 		items: [
 			{ to: '/admin/analytics', label: 'Analytics', icon: 'material-symbols:monitoring' },
+			{ to: '/admin/audit-log', label: 'Audit Log', icon: 'material-symbols:history' },
 			{ to: '/admin/settings', label: 'Settings', icon: 'material-symbols:settings-outline' }
 		]
 	}
