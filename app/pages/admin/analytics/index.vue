@@ -19,37 +19,37 @@ const activePct = computed(() => userActivityTotal.value ? Math.round((data.valu
 	<div class="flex flex-col gap-6">
 		<div>
 			<h1 class="text-xl font-semibold">Analytics</h1>
-			<p class="text-sm text-muted">Computed from the mock store - the same shape a real database would feed once Phase 4 lands.</p>
+			<p class="text-sm text-muted">Computed from the real database.</p>
 		</div>
 
 		<div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-			<UCard>
+			<UCard class="min-w-0">
 				<template #header><p class="font-medium">Revenue by day</p></template>
 				<AdminBarChart :items="data?.revenueByDay ?? []" value-prefix="$" />
 			</UCard>
 
-			<UCard>
+			<UCard class="min-w-0">
 				<template #header><p class="font-medium">Popular HUDs (by paid orders)</p></template>
 				<AdminBarChart :items="data?.popularHuds ?? []" />
 			</UCard>
 
-			<UCard>
+			<UCard class="min-w-0">
 				<template #header><p class="font-medium">Referral earnings by referrer</p></template>
 				<AdminBarChart :items="data?.referralEarnings ?? []" value-prefix="$" color="var(--ui-secondary, var(--ui-primary))" />
 			</UCard>
 
-			<UCard>
+			<UCard class="min-w-0">
 				<template #header><p class="font-medium">User activity</p></template>
 				<div class="flex flex-col gap-3">
-					<div class="flex h-3 rounded-full overflow-hidden gap-0.5" v-if="userActivityTotal">
+					<div class="flex h-3 rounded-full overflow-hidden gap-0.5 min-w-0" v-if="userActivityTotal">
 						<div
 							class="h-full rounded-full"
 							:style="{ width: `${activePct}%`, background: 'var(--ui-success)' }"
 							:title="`Active: ${data?.userActivity.active}`"
 						/>
 						<div
-							class="h-full rounded-full flex-1"
-							:style="{ background: 'var(--ui-error)' }"
+							class="h-full rounded-full"
+							:style="{ width: `${100 - activePct}%`, background: 'var(--ui-error)' }"
 							:title="`Banned: ${data?.userActivity.banned}`"
 						/>
 					</div>
