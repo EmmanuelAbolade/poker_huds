@@ -8,6 +8,8 @@
 definePageMeta({ layout: 'admin', middleware: 'admin-auth' })
 
 const toast = useToast()
+const { user } = useAdminAuth()
+const canEdit = computed(() => user.value?.role === 'super_admin')
 const { data } = await useFetch<Record<string, string>>('/api/admin/settings')
 
 const form = reactive({
@@ -57,17 +59,25 @@ async function onSave() {
 				<h1 class="text-xl font-semibold">Settings</h1>
 				<p class="text-sm text-muted">Site identity, feature toggles, and stubs for payment/storage pending provider decisions.</p>
 			</div>
-			<UButton :loading="saving" @click="onSave">Save Settings</UButton>
+			<UButton v-if="canEdit" :loading="saving" @click="onSave">Save Settings</UButton>
 		</div>
+
+		<UAlert
+			v-if="!canEdit"
+			color="neutral"
+			variant="soft"
+			title="View only"
+			description="Editing Settings requires the Super Admin role."
+		/>
 
 		<UCard>
 			<template #header><p class="font-medium">General</p></template>
 			<div class="flex flex-col gap-4">
 				<UFormField label="Site Name">
-					<UInput v-model="form.site_name" class="w-full" placeholder="Gamblin4Kids" />
+					<UInput v-model="form.site_name" class="w-full" placeholder="Gamblin4Kids" :disabled="!canEdit" />
 				</UFormField>
 				<UFormField label="Logo URL" description="Client's notes just say the logo is &quot;SIN&quot; - drop the asset URL here once received.">
-					<UInput v-model="form.logo_url" class="w-full" placeholder="/img/logo.svg" />
+					<UInput v-model="form.logo_url" class="w-full" placeholder="/img/logo.svg" :disabled="!canEdit" />
 				</UFormField>
 			</div>
 		</UCard>
@@ -80,14 +90,14 @@ async function onSave() {
 						<p class="text-sm font-medium">Referrals enabled</p>
 						<p class="text-xs text-muted">Turns the referral program on/off storefront-wide.</p>
 					</div>
-					<USwitch v-model="referralsEnabled" />
+					<USwitch v-model="referralsEnabled" :disabled="!canEdit" />
 				</div>
 				<div class="flex items-center justify-between">
 					<div>
 						<p class="text-sm font-medium">Public signup enabled</p>
 						<p class="text-xs text-muted">Allow new accounts to register on the storefront.</p>
 					</div>
-					<USwitch v-model="publicSignupEnabled" />
+					<USwitch v-model="publicSignupEnabled" :disabled="!canEdit" />
 				</div>
 			</div>
 		</UCard>
@@ -100,7 +110,7 @@ async function onSave() {
 				</div>
 			</template>
 			<UFormField label="Payment provider" description="No processor confirmed yet - see PROJECTDOC.md section 6, Q3.">
-				<UInput v-model="form.payment_provider" class="w-full" placeholder="e.g. stripe" />
+				<UInput v-model="form.payment_provider" class="w-full" placeholder="e.g. stripe" :disabled="!canEdit" />
 			</UFormField>
 		</UCard>
 
@@ -112,14 +122,14 @@ async function onSave() {
 				</div>
 			</template>
 			<UFormField label="Storage provider" description="No provider confirmed yet - see PROJECTDOC.md section 6, Q4. HUD images/videos use plain URLs until this is set.">
-				<UInput v-model="form.storage_provider" class="w-full" placeholder="e.g. cloudflare-r2" />
+				<UInput v-model="form.storage_provider" class="w-full" placeholder="e.g. cloudflare-r2" :disabled="!canEdit" />
 			</UFormField>
 		</UCard>
 
 		<UCard>
 			<template #header><p class="font-medium">Email Templates</p></template>
 			<UFormField label="Welcome email body" description="Plain text for now - a rich editor (TipTap is already a dependency) can replace this once templates are prioritized.">
-				<UTextarea v-model="form.welcome_email_body" class="w-full" :rows="4" placeholder="Welcome to Gamblin4Kids..." />
+				<UTextarea v-model="form.welcome_email_body" class="w-full" :rows="4" placeholder="Welcome to Gamblin4Kids..." :disabled="!canEdit" />
 			</UFormField>
 		</UCard>
 	</div>
