@@ -3,6 +3,7 @@
 // Backed by the real database.
 
 export default defineEventHandler(async (event) => {
+	const actor = requireRole(event, ['admin', 'super_admin'])
 	const id = getRouterParam(event, 'id')
 	const body = await readBody<{ status?: 'active' | 'expired' | 'revoked', expiresAt?: string | null }>(event)
 
@@ -22,6 +23,6 @@ export default defineEventHandler(async (event) => {
 		throw error
 	}
 
-	await recordAuditLog('admin_1', 'update', 'license', id)
+	await recordAuditLog(actor.id, 'update', 'license', id)
 	return updated
 })

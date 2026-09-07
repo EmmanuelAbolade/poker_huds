@@ -3,6 +3,7 @@
 // Backed by the real database - see index.get.ts's header comment.
 
 export default defineEventHandler(async (event) => {
+	const actor = requireRole(event, ['admin', 'super_admin'])
 	const body = await readBody<{ name?: string, sortOrder?: number }>(event)
 
 	if (!body?.name?.trim()) {
@@ -25,7 +26,7 @@ export default defineEventHandler(async (event) => {
 		throw error
 	}
 
-	await recordAuditLog('admin_1', 'create', 'category', category.id)
+	await recordAuditLog(actor.id, 'create', 'category', category.id)
 
 	return category
 })

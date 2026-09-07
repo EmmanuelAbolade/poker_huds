@@ -5,6 +5,7 @@
 // fail (P2003) rather than silently orphaning that HUD's categoryId.
 
 export default defineEventHandler(async (event) => {
+	const actor = requireRole(event, ['admin', 'super_admin'])
 	const id = getRouterParam(event, 'id')
 	if (!id) throw createError({ statusCode: 400, statusMessage: 'id is required' })
 
@@ -20,6 +21,6 @@ export default defineEventHandler(async (event) => {
 		throw error
 	}
 
-	await recordAuditLog('admin_1', 'delete', 'category', id)
+	await recordAuditLog(actor.id, 'delete', 'category', id)
 	return { ok: true }
 })
