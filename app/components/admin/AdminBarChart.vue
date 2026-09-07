@@ -23,9 +23,9 @@ function widthPct(value: number) {
 
 <template>
 	<div class="flex flex-col gap-3">
-		<div v-for="item in items" :key="item.label" class="flex items-center gap-3">
+		<div v-for="item in items" :key="item.label" class="flex items-center gap-3 min-w-0">
 			<span class="w-32 shrink-0 truncate text-sm text-muted" :title="item.label">{{ item.label }}</span>
-			<div class="flex-1 h-3 rounded-full bg-elevated overflow-hidden">
+			<div class="flex-1 min-w-0 h-3 rounded-full bg-elevated overflow-hidden">
 				<div
 					class="h-full rounded-full transition-all"
 					:style="{ width: widthPct(item.value), background: color ?? 'var(--ui-primary)' }"

@@ -18,7 +18,7 @@ const cards = computed(() => [
 	<div class="flex flex-col gap-6">
 		<div>
 			<h1 class="text-xl font-semibold">Dashboard</h1>
-			<p class="text-sm text-muted">System overview - data below is from the mock store (see PROJECTDOC.md section 5.4).</p>
+			<p class="text-sm text-muted">System overview - data below is from the real database.</p>
 		</div>
 
 		<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -36,8 +36,8 @@ const cards = computed(() => [
 		<UAlert
 			color="neutral"
 			variant="soft"
-			title="Phase 0 scaffold"
-			description="Categories has full CRUD wired up as the reference module. Other modules in the sidebar are placeholders pending Phase 1-3 - see PROJECTDOC.md section 8 (Roadmap)."
+			title="Media is the one module still pending"
+			description="Every other module (Users, HUD Products, Orders/Licenses, Referrals, Analytics, Settings, Audit Log) has real CRUD on the real database. Media is blocked on a storage provider decision - see PROJECTDOC.md section 8 (Roadmap)."
 		/>
 	</div>
 </template>
