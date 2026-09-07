@@ -203,6 +203,23 @@ Created a real moderator account through that new module and used it to verify t
 
 ---
 
+### Day 2, continued — Media, the last placeholder
+
+Last item before deployment: Media. This one had a real design question up front, since nothing about it existed yet - no schema, no storage, no page beyond the `AdminComingSoon` placeholder.
+
+**Added a `MediaAsset` table rather than reusing the existing image URL fields.** HUD situations/screens/pop-ups already store their image as a plain string (`imageUrl`), which raised the question of whether Media needed its own table at all, or could just be "a way to generate URLs." Went with a real table anyway - `id`, `type`, `url`, `uploadedAt`, plus a loose `ownerType`/`ownerId` (no FK, just a label) - because the client's spec explicitly asks for a media *library*: something browsable independent of any one HUD, that can be deleted/replaced on its own. A bare URL-generator wouldn't give you a list of everything uploaded across the whole site. Deliberately did **not** wire the library into the HUD editor's URL fields - "using" an asset today means copying its URL over by hand, which is genuinely fine given the editor already accepts arbitrary URLs; building a picker component would be scope no one asked for yet.
+
+**Storage adapter, not a storage decision.** Same reasoning as the database back on Day 1: no provider was ever confirmed (still open - PROJECTDOC.md §6 Q4), and waiting on that would mean Media stays a placeholder indefinitely. `server/utils/storage.ts` exposes exactly two functions, `saveFile()`/`deleteFile()`, backed by local disk (`public/uploads/`) for now. Documented plainly, not quietly: this does **not** survive a redeploy on most hosts, because `public/` ships with the app bundle rather than persisting separately. That's a real limitation, not a nitpick - flagging it now means it's a known, planned swap later instead of a surprise when someone redeploys and every uploaded image 404s.
+
+**`UFileUpload` did the heavy lifting.** Nuxt UI v4 ships a proper dropzone component (drag/drop, click-to-browse, file previews) - used it as-is rather than hand-rolling a file input, consistent with leaning on the component library everywhere else in this project. It hands back `File` objects via `v-model`; the actual upload (a `FormData` POST) is just a `watch()` on that ref.
+
+**With Media built, every module in the client's spec has real, working functionality.** Nothing left is a placeholder page. What's still open is exclusively the Phase 4/5 stuff that was always going to require the client's input: production hosting, real auth/payment/storage providers, referral commission math, data privacy rules, and the storefront-ownership question raised with him directly.
+
+### Verification (Media)
+`nuxt typecheck` clean, `npm run build` succeeds. Verified via curl: upload with a real image file succeeds and the file is actually servable afterward; an unsupported file type (`application/json`) correctly 400s rather than silently accepting it; delete removes both the database row and the file on disk (confirmed the URL 404s afterward, not just that the API call returned ok). Then re-verified the whole flow in an actual browser (not just curl): dropped a file onto the dropzone, watched it upload and render a real thumbnail in the grid, copied its URL, deleted it - matches curl's results exactly, so the UI layer isn't hiding anything the API-level check would've missed.
+
+---
+
 ## Architecture Deep-Dive (living section — updated as the system grows)
 
 See `PROJECTDOC.md` §5 for the structured version. The short version: Nuxt server routes under `server/api/admin/**` are the only thing that talks to data, and as of Phase 4b that's the real database (Prisma + SQLite, `server/utils/prisma.ts`) end to end - the mock layer that made this buildable before any backend decisions landed has been fully migrated off and deleted; Nuxt UI v4 components (tables, modals, forms) drive every CRUD screen; one shared `app/layouts/admin.vue` shell hosts every admin page behind a session gate (real `AdminUser` lookup, still a mock password check) - and as of Day 2, `server/middleware/admin-session.ts` enforces that same session check at the API layer itself, with `server/utils/permissions.ts` layering role-based authorization on top. Nothing about the storefront (`app/pages/index.vue`, `Navbar.vue`, etc.) is touched by this work.
