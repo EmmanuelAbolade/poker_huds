@@ -3,6 +3,7 @@
 // empty - added on the detail/edit page. Backed by the real database.
 
 export default defineEventHandler(async (event) => {
+	const actor = requireRole(event, ['admin', 'super_admin'])
 	const body = await readBody<{ title?: string, description?: string, price?: number, categoryId?: string }>(event)
 
 	if (!body?.title?.trim()) {
@@ -31,6 +32,6 @@ export default defineEventHandler(async (event) => {
 		throw error
 	}
 
-	await recordAuditLog('admin_1', 'create', 'hud', hud.id)
+	await recordAuditLog(actor.id, 'create', 'hud', hud.id)
 	return { ...hud, situations: [] }
 })

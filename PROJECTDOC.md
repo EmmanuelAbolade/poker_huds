@@ -59,6 +59,7 @@ The client wants to see visible progress within days. Because there is no confir
 | **Analytics** | Sales, popular HUDs, referral performance, user activity | — | — | — | Charts; reads from the same data other modules write |
 | **Settings** | View | — | Yes | — | Logo, payment settings, storage settings, email templates, feature toggles |
 | **Audit Log** | List, filter | — | — | — | Every admin mutation should write an entry here (who/what/when) |
+| **Staff Accounts** | List (super_admin only) | Yes | Yes (role) | Yes | Console access for admins/moderators — distinct from Users (customers); §5.7 |
 
 ### 3.3 Referral System (detail)
 Per the client's design doc:
@@ -141,6 +142,20 @@ We deliberately pinned `prisma`/`@prisma/client` to **6.19.3** rather than letti
 
 Every module — Categories, Users, HUD Products (including the nested situations/screens/popups tree), Orders/Licenses, Referrals, Settings, Auth, Stats, Analytics, Audit Log — now reads and writes exclusively through Prisma against the real database. Real foreign-key constraints now enforce things the mock layer could only leave comments about: deleting a Category/User/HUD still referenced elsewhere correctly 409s instead of silently orphaning data. `mockDb.ts` is gone; nothing in the codebase references it. Nothing left in this list.
 
+### 5.7 Authentication & authorization
+
+- **API-level session enforcement**: `server/middleware/admin-session.ts` requires a valid session cookie for every `/api/admin/**` request (except login/session themselves) and 401s otherwise. This is the authoritative check — the page-level middleware (`app/middleware/admin-auth.ts`) only guards browser navigation and exists for UX, not security. (Found missing during browser QA on 2026-09-07 — before this, any direct request to any admin API endpoint worked with zero authentication. See DIARY.md.)
+- **Role-based access control**: enforced via `requireRole()` (`server/utils/permissions.ts`) at the top of every mutation route. The client's spec says "role-based access control" without defining what each role can do — the permission matrix below is our assumption, flagged for the client to review/adjust:
+
+  | Role | Can do |
+  |---|---|
+  | `super_admin` | Everything, including managing other admin accounts (Staff Accounts module) and Settings |
+  | `admin` | Full CRUD on every business entity (Categories, HUD Products, Users, Orders/Licenses, Referrals, Media) — not staff accounts or Settings |
+  | `moderator` | Read everything, plus the specific moderation actions: ban/unban a user, flag/unflag a referral as abuse — cannot create/edit/delete core business records |
+
+- **Staff Accounts** (`/admin/staff`, super_admin only): manage admin/moderator console access — separate from Users (customers). Didn't exist before this pass, meaning roles were previously untestable (only one super_admin account could ever exist). Safeguards: can't delete your own account, can't delete or demote the last super_admin.
+- **Still mock**: the password check itself remains a hardcoded constant (`admin123` for every account) — there's no per-account credential system yet. This is intentionally unchanged pending the client's answer on an auth provider (§6, Q2).
+
 ---
 
 ## 6. Open Questions for the Client
@@ -201,4 +216,5 @@ These are unanswered by the PDF/docx and materially affect backend work (they do
 - **2026-09-03** — Phase 3 (Analytics, Settings, Audit Log) built same day. Every module from PROJECTDOC.md §3.2 now has at least a scaffolded page; every one except Media has real CRUD or real read functionality. Remaining before the client's spec is "fully built": Media upload UI (blocked on storage provider), real payment/auth/storage wiring (Phase 4, blocked on client answers in §6), and connecting this admin data to the storefront/user UI (Phase 5).
 - **2026-09-03** — Client confirmed the plan to build the real database schema, backend API endpoints, admin dashboard (already ahead of schedule), and integration. Real schema built same day (§5.3-5.6): Prisma + SQLite, every entity modeled with proper relations, Categories cut over as proof. Open question narrowed from "what database?" to just "which production Postgres host?" (§6, Q1).
 - **2026-09-03** — Rest of the migration finished same day: every module (Users, HUD Products incl. nested tree, Orders/Licenses, Referrals, Settings, Auth, Stats, Analytics, Audit Log) cut over from the mock layer to Prisma. `server/utils/mockDb.ts` deleted. The admin console now runs entirely on the real database.
-- **2026-09-07** — First real browser QA pass (Playwright), closing the gap every prior phase's DIARY flagged and left open. Found and fixed a significant app-wide CSS bug: the storefront's original unlayered `padding:0;margin:0` reset was silently defeating every Tailwind padding/margin utility across the whole app (see DIARY.md for the cascade-layers root cause) — every admin page is now correctly spaced, not just Analytics. Also fixed two chart overflow bugs and stale copy on the Dashboard/Analytics pages left over from the mock-data era. Next: RBAC enforcement, Media module, live preview deployment.
+- **2026-09-07** — First real browser QA pass (Playwright), closing the gap every prior phase's DIARY flagged and left open. Found and fixed a significant app-wide CSS bug: the storefront's original unlayered `padding:0;margin:0` reset was silently defeating every Tailwind padding/margin utility across the whole app (see DIARY.md for the cascade-layers root cause) — every admin page is now correctly spaced, not just Analytics. Also fixed two chart overflow bugs and stale copy on the Dashboard/Analytics pages left over from the mock-data era.
+- **2026-09-07** — RBAC built same day. Along the way found a real security gap: the API layer had zero session verification (any direct request to any admin mutation endpoint worked with no cookie at all) — fixed with `server/middleware/admin-session.ts`, now the authoritative auth check (§5.7). Role permission matrix defined and enforced (`server/utils/permissions.ts`), Staff Accounts module added so roles are actually usable/testable, every audit log entry now attributes to the real actor instead of a hardcoded id. Next: Media module, live preview deployment.

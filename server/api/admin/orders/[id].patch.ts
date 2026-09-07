@@ -5,6 +5,7 @@
 // only order mutation exposed.
 
 export default defineEventHandler(async (event) => {
+	const actor = requireRole(event, ['admin', 'super_admin'])
 	const id = getRouterParam(event, 'id')
 	const body = await readBody<{ status?: string }>(event)
 
@@ -27,6 +28,6 @@ export default defineEventHandler(async (event) => {
 		return updated
 	})
 
-	await recordAuditLog('admin_1', 'refund', 'order', id)
+	await recordAuditLog(actor.id, 'refund', 'order', id)
 	return updated
 })

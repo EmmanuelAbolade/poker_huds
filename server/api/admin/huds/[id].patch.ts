@@ -22,6 +22,7 @@ type SituationInput = {
 }
 
 export default defineEventHandler(async (event) => {
+	const actor = requireRole(event, ['admin', 'super_admin'])
 	const id = getRouterParam(event, 'id')
 	const body = await readBody<Partial<Pick<Hud, 'title' | 'description' | 'price' | 'categoryId' | 'status'>> & { situations?: SituationInput[] }>(event)
 
@@ -72,6 +73,6 @@ export default defineEventHandler(async (event) => {
 		throw error
 	}
 
-	await recordAuditLog('admin_1', 'update', 'hud', id)
+	await recordAuditLog(actor.id, 'update', 'hud', id)
 	return updated
 })

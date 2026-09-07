@@ -3,6 +3,7 @@
 // Backed by the real database.
 
 export default defineEventHandler(async (event) => {
+	const actor = requireRole(event, ['admin', 'super_admin'])
 	const body = await readBody<{ userId?: string, hudId?: string, amount?: number }>(event)
 
 	if (!body?.userId || !(await prisma.customer.findUnique({ where: { id: body.userId } }))) {
@@ -23,7 +24,7 @@ export default defineEventHandler(async (event) => {
 		return { order, license }
 	})
 
-	await recordAuditLog('admin_1', 'create', 'order', order.id)
+	await recordAuditLog(actor.id, 'create', 'order', order.id)
 
 	return { ...order, license }
 })
