@@ -189,3 +189,25 @@ model Setting {
   value     String
   updatedAt DateTime @updatedAt
 }
+
+enum MediaAssetType {
+  image
+  video
+}
+
+// Uploaded files, managed independently of where they end up being used.
+// ownerType/ownerId are a loose, unenforced reference (no FK) rather than
+// a relation to Hud/Situation/Screen/PopupImage directly - those already
+// store their image/video as a plain URL string (see prisma/schema.prisma
+// Screen.imageUrl etc.), so a media asset's "owner" is just a label for
+// browsing/filtering, not a hard constraint. Deleting a HUD/situation/
+// screen does not cascade-delete its media - the file may still be
+// referenced elsewhere or reused.
+model MediaAsset {
+  id         String         @id @default(cuid())
+  type       MediaAssetType
+  url        String
+  ownerType  String?
+  ownerId    String?
+  uploadedAt DateTime       @default(now())
+}
