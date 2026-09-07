@@ -42,6 +42,7 @@
   "devDependencies": {
     "@iconify-json/lucide": "^1.2.129",
     "@iconify-json/material-symbols": "^1.2.90",
+    "@types/node": "^26.5.0",
     "dotenv": "^17.4.2",
     "prisma": "^6.19.3",
     "tsx": "^4.23.13",
