@@ -4,6 +4,7 @@
 // endpoint rather than per-key CRUD.
 
 export default defineEventHandler(async (event) => {
+	const actor = requireRole(event, ['super_admin'])
 	const body = await readBody<Record<string, string>>(event)
 
 	await prisma.$transaction(
@@ -12,7 +13,7 @@ export default defineEventHandler(async (event) => {
 		)
 	)
 
-	await recordAuditLog('admin_1', 'update', 'settings', Object.keys(body ?? {}).join(','))
+	await recordAuditLog(actor.id, 'update', 'settings', Object.keys(body ?? {}).join(','))
 
 	const settings = await prisma.setting.findMany()
 	const map: Record<string, string> = {}

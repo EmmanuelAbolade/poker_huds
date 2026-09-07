@@ -3,6 +3,7 @@
 // index.get.ts's header comment.
 
 export default defineEventHandler(async (event) => {
+	const actor = requireRole(event, ['admin', 'super_admin'])
 	const id = getRouterParam(event, 'id')
 	const body = await readBody<{ name?: string, slug?: string, sortOrder?: number }>(event)
 
@@ -21,6 +22,6 @@ export default defineEventHandler(async (event) => {
 		throw error
 	}
 
-	await recordAuditLog('admin_1', 'update', 'category', id)
+	await recordAuditLog(actor.id, 'update', 'category', id)
 	return updated
 })
