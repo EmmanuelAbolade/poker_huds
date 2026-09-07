@@ -4,7 +4,7 @@
 
 export default defineEventHandler(async (event) => {
 	const actor = requireRole(event, ['admin', 'super_admin'])
-	const body = await readBody<{ name?: string, sortOrder?: number }>(event)
+	const body = await readBody<{ name?: string, sortOrder?: number, description?: string }>(event)
 
 	if (!body?.name?.trim()) {
 		throw createError({ statusCode: 400, statusMessage: 'name is required' })
@@ -17,7 +17,7 @@ export default defineEventHandler(async (event) => {
 	let category
 	try {
 		category = await prisma.category.create({
-			data: { name: body.name.trim(), slug, sortOrder }
+			data: { name: body.name.trim(), slug, sortOrder, description: body.description?.trim() ?? '' }
 		})
 	} catch (error: any) {
 		if (error.code === 'P2002') {
