@@ -26,3 +26,7 @@ logs
 # Prisma - local SQLite database files (schema/migrations ARE committed)
 /prisma/dev.db
 /prisma/dev.db-journal
+
+# Media module - local-disk storage adapter output (not committed; swap
+# for real cloud storage before production, see server/utils/storage.ts)
+/public/uploads
