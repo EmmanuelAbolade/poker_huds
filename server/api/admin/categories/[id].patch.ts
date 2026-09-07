@@ -5,7 +5,7 @@
 export default defineEventHandler(async (event) => {
 	const actor = requireRole(event, ['admin', 'super_admin'])
 	const id = getRouterParam(event, 'id')
-	const body = await readBody<{ name?: string, slug?: string, sortOrder?: number }>(event)
+	const body = await readBody<{ name?: string, slug?: string, sortOrder?: number, description?: string, status?: 'active' | 'inactive' }>(event)
 
 	if (!id) throw createError({ statusCode: 400, statusMessage: 'id is required' })
 
