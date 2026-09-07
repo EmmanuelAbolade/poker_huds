@@ -1,14 +1,16 @@
 // server/api/admin/huds/index.get.ts
-// List HUDs with category name and situation count resolved in. Uses
-// _count instead of including the full nested tree - the list view only
-// needs the count, and fetching every situation/screen/popup for every
-// HUD just to show a number would be wasteful (the full tree is what
-// [id].get.ts is for). Backed by the real database.
+// List HUDs with category name, situation count, and screen count
+// resolved in for the redesigned list table. Screen count needs summing
+// per-situation counts in JS since Prisma's _count can't aggregate two
+// relations deep in one query. Backed by the real database.
 
 export default defineEventHandler(async () => {
 	const huds = await prisma.hud.findMany({
 		orderBy: { updatedAt: 'desc' },
-		include: { category: true, _count: { select: { situations: true } } }
+		include: {
+			category: true,
+			situations: { select: { _count: { select: { screens: true } } } }
+		}
 	})
 
 	const items = huds.map(h => ({
@@ -20,7 +22,8 @@ export default defineEventHandler(async () => {
 		status: h.status,
 		categoryId: h.categoryId,
 		categoryName: h.category.name,
-		situationsCount: h._count.situations,
+		situationsCount: h.situations.length,
+		screensCount: h.situations.reduce((sum, s) => sum + s._count.screens, 0),
 		createdAt: h.createdAt.toISOString(),
 		updatedAt: h.updatedAt.toISOString()
 	}))

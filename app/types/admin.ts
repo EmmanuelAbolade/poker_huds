@@ -25,11 +25,16 @@ export interface Customer {
 	createdAt: string
 }
 
+export type CategoryStatus = 'active' | 'inactive'
+
 export interface Category {
 	id: string
 	name: string
 	slug: string
 	sortOrder: number
+	description: string
+	status: CategoryStatus
+	createdAt: string
 }
 
 export type HudStatus = 'draft' | 'published'
