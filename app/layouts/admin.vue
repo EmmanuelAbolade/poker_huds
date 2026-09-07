@@ -55,8 +55,8 @@ async function onLogout() {
 
 <template>
 	<div class="flex min-h-screen bg-default text-default">
-		<aside class="w-64 shrink-0 border-r border-default flex flex-col">
-			<div class="p-4 border-b border-default">
+		<aside class="w-64 shrink-0 flex flex-col bg-elevated shadow-[2px_0_12px_-2px_rgba(0,0,0,0.12)] dark:shadow-[2px_0_16px_-2px_rgba(0,0,0,0.5)] z-10">
+			<div class="p-4 bg-gradient-to-b from-elevated to-default/40 shadow-sm">
 				<p class="font-semibold">Gamblin4Kids</p>
 				<p class="text-xs text-muted">Admin Console</p>
 			</div>
@@ -68,12 +68,19 @@ async function onLogout() {
 						<li v-for="item in group.items" :key="item.to">
 							<NuxtLink
 								:to="item.to"
-								class="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors"
+								class="group flex items-center gap-2.5 rounded-lg px-2 py-1.5 text-sm transition-all duration-150"
 								:class="isActive(item.to)
-									? 'bg-elevated text-highlighted font-medium'
-									: 'text-toned hover:bg-elevated'"
+									? 'bg-gradient-to-r from-primary/15 to-primary/5 text-primary font-medium shadow-sm border-l-[3px] border-primary -ml-px'
+									: 'text-toned hover:bg-default hover:shadow-sm hover:translate-x-0.5 border-l-[3px] border-transparent'"
 							>
-								<UIcon :name="item.icon" class="size-4 shrink-0" />
+								<span
+									class="flex items-center justify-center size-6 rounded-md shrink-0 transition-all duration-150"
+									:class="isActive(item.to)
+										? 'bg-primary text-inverted shadow-sm'
+										: 'bg-default text-muted shadow-sm group-hover:shadow-md'"
+								>
+									<UIcon :name="item.icon" class="size-3.5" />
+								</span>
 								<span>{{ item.label }}</span>
 							</NuxtLink>
 						</li>
@@ -83,11 +90,11 @@ async function onLogout() {
 		</aside>
 
 		<div class="flex-1 flex flex-col min-w-0">
-			<header class="h-14 shrink-0 border-b border-default flex items-center justify-between px-4">
+			<header class="h-14 shrink-0 bg-default shadow-sm flex items-center justify-between px-4 z-[5]">
 				<p class="text-sm text-muted">Signed in as {{ user?.name }} ({{ user?.role }})</p>
 				<div class="flex items-center gap-2">
 					<UColorModeButton />
-					<UButton size="sm" color="neutral" variant="ghost" icon="material-symbols:logout" @click="onLogout">
+					<UButton size="sm" color="neutral" variant="soft" icon="material-symbols:logout" @click="onLogout">
 						Log out
 					</UButton>
 				</div>
