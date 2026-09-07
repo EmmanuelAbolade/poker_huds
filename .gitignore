@@ -30,3 +30,8 @@ logs
 # Media module - local-disk storage adapter output (not committed; swap
 # for real cloud storage before production, see server/utils/storage.ts)
 /public/uploads
+
+# Internal working docs - kept locally for the dev's own reference only,
+# not committed until explicitly decided otherwise
+/DIARY.md
+/PROJECTDOC.md
