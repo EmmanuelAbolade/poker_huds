@@ -3,6 +3,7 @@
 // email constraint is enforced by the schema (P2002), not app code.
 
 export default defineEventHandler(async (event) => {
+	const actor = requireRole(event, ['admin', 'super_admin'])
 	const body = await readBody<{ name?: string, email?: string, referredByUserId?: string | null }>(event)
 
 	if (!body?.name?.trim() || !body?.email?.trim()) {
@@ -25,6 +26,6 @@ export default defineEventHandler(async (event) => {
 		throw error
 	}
 
-	await recordAuditLog('admin_1', 'create', 'customer', customer.id)
+	await recordAuditLog(actor.id, 'create', 'customer', customer.id)
 	return customer
 })

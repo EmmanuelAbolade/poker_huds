@@ -2,6 +2,7 @@
 // Manually record a referral link. Backed by the real database.
 
 export default defineEventHandler(async (event) => {
+	const actor = requireRole(event, ['admin', 'super_admin'])
 	const body = await readBody<{ referrerUserId?: string, referredUserId?: string, level?: 1 | 2, earnings?: number }>(event)
 
 	if (!body?.referrerUserId || !(await prisma.customer.findUnique({ where: { id: body.referrerUserId } }))) {
@@ -23,6 +24,6 @@ export default defineEventHandler(async (event) => {
 		}
 	})
 
-	await recordAuditLog('admin_1', 'create', 'referral', referral.id)
+	await recordAuditLog(actor.id, 'create', 'referral', referral.id)
 	return referral
 })

@@ -2,6 +2,7 @@
 // Removes an erroneous referral record. Backed by the real database.
 
 export default defineEventHandler(async (event) => {
+	const actor = requireRole(event, ['admin', 'super_admin'])
 	const id = getRouterParam(event, 'id')
 	if (!id) throw createError({ statusCode: 400, statusMessage: 'id is required' })
 
@@ -12,6 +13,6 @@ export default defineEventHandler(async (event) => {
 		throw error
 	}
 
-	await recordAuditLog('admin_1', 'delete', 'referral', id)
+	await recordAuditLog(actor.id, 'delete', 'referral', id)
 	return { ok: true }
 })

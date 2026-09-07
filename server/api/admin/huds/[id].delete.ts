@@ -5,6 +5,7 @@
 // history correctly 409s (P2003) instead of orphaning those records.
 
 export default defineEventHandler(async (event) => {
+	const actor = requireRole(event, ['admin', 'super_admin'])
 	const id = getRouterParam(event, 'id')
 	if (!id) throw createError({ statusCode: 400, statusMessage: 'id is required' })
 
@@ -18,6 +19,6 @@ export default defineEventHandler(async (event) => {
 		throw error
 	}
 
-	await recordAuditLog('admin_1', 'delete', 'hud', id)
+	await recordAuditLog(actor.id, 'delete', 'hud', id)
 	return { ok: true }
 })
