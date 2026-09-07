@@ -7,7 +7,7 @@
 const { user, logout } = useAdminAuth()
 const route = useRoute()
 
-const navGroups = [
+const navGroups = computed(() => [
 	{
 		label: 'Overview',
 		items: [
@@ -35,10 +35,13 @@ const navGroups = [
 		items: [
 			{ to: '/admin/analytics', label: 'Analytics', icon: 'material-symbols:monitoring' },
 			{ to: '/admin/audit-log', label: 'Audit Log', icon: 'material-symbols:history' },
-			{ to: '/admin/settings', label: 'Settings', icon: 'material-symbols:settings-outline' }
+			{ to: '/admin/settings', label: 'Settings', icon: 'material-symbols:settings-outline' },
+			...(user.value?.role === 'super_admin'
+				? [{ to: '/admin/staff', label: 'Staff Accounts', icon: 'material-symbols:admin-panel-settings-outline' }]
+				: [])
 		]
 	}
-]
+])
 
 function isActive(to: string) {
 	return to === '/admin' ? route.path === '/admin' : route.path.startsWith(to)
