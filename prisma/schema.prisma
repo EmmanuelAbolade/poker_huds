@@ -74,11 +74,19 @@ model Customer {
   referralsReceived Referral[] @relation("ReferralsReceived")
 }
 
+enum CategoryStatus {
+  active
+  inactive
+}
+
 model Category {
-  id        String @id @default(cuid())
-  name      String
-  slug      String @unique
-  sortOrder Int    @default(0)
+  id          String         @id @default(cuid())
+  name        String
+  slug        String         @unique
+  sortOrder   Int            @default(0)
+  description String         @default("")
+  status      CategoryStatus @default(active)
+  createdAt   DateTime       @default(now())
 
   huds Hud[]
 }
