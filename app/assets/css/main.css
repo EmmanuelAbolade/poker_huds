@@ -1,3 +1,10 @@
+/* app/assets/css/main.css */
+/* Global stylesheet. Tailwind + Nuxt UI power the /admin console;
+   the --primary-clr-* variables below are the existing storefront theme
+   (dark-only, left as-is - out of scope for the admin console work). */
+@import "tailwindcss";
+@import "@nuxt/ui";
+
 :root {
 	--primary-clr-1: #00FACD;
 	--primary-clr-1-op: #00FACD44;
@@ -10,9 +17,16 @@
 	--default-gap: .8rem;
 }
 
-body, *{
-	padding: 0;
-	margin: 0;
+/* Wrapped in @layer base (not left bare) so Tailwind utility classes like
+   p-6/px-4 can still override it - CSS cascade layers give ANY layered
+   rule priority over unlayered rules regardless of specificity, so this
+   reset being bare was silently defeating every padding/margin utility
+   in the whole app (storefront AND admin) - see DIARY.md. */
+@layer base {
+	body, * {
+		padding: 0;
+		margin: 0;
+	}
 }
 
 body {
